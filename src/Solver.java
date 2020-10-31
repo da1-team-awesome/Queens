@@ -7,6 +7,8 @@ public class Solver {
     private int noOfSolutions;
 
     public void findAllSolutions(int noOfQueens) {
+        long startTime = System.currentTimeMillis();
+
         this.noOfQueens = noOfQueens;
         queens = new int[noOfQueens];
         Arrays.fill(queens, -1);
@@ -17,6 +19,10 @@ public class Solver {
         positionQueen(0);
 
         System.out.println("\n A total of " + noOfSolutions + " solutions were found.\n****");
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("were found in " + (endTime - startTime) + " ms");
     }
 
     private void positionQueen(int row) {
@@ -77,7 +83,7 @@ public class Solver {
     }
 
     private String convert(int row, int col) {
-        String[] letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"};
+        String[] letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q"};
 
         return letters[col] + (row + 1);
     }
