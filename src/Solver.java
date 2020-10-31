@@ -1,3 +1,5 @@
+import java.text.DecimalFormat;
+import java.util.Arrays;
 /**
  * Solver
  * A class to solve the n-queen problem recursively.
@@ -5,36 +7,84 @@
  * @author Gustav Burchardt and A. Malthe Henriksen
  * @version 31-10-2020
  */
-
-import java.util.Arrays;
-
 public class Solver {
 
-    private int noOfQueens;
+    private int noOfQueens, noOfSolutions;
     private int[] queens;
-    private int noOfSolutions;
+    private boolean showSolutions;
 
     /**
      * Finds all solutions for an n-queen problem and prints the result to the console.
      * @param noOfQueens Number of queens
      */
     public void findAllSolutions(int noOfQueens) {
-        long startTime = System.currentTimeMillis();
-
-        this.noOfQueens = noOfQueens;
+        // Set field variables.
+        this.noOfQueens     = noOfQueens;
+        this.noOfSolutions  = 0;
+        // Create and fill queens array.
         queens = new int[noOfQueens];
         Arrays.fill(queens, -1);
-        noOfSolutions = 0;
 
-        System.out.println("****\n Solutions for " + noOfQueens + " queens:\n");
+        // Ready timers.
+        long startTime = 0, endTime;
 
+        // Only print and measure the time, if we are showing solutions
+        if (showSolutions) {
+            System.out.println("\n*******************************************");
+            System.out.println("Solutions for " + noOfQueens + " queens:\n");
+            startTime = System.currentTimeMillis(); // Start timer.
+        }
+
+        // Place queens recursively.
         positionQueen(0);
 
-        System.out.println("\n A total of " + noOfSolutions + " solutions were found.\n****");
+        // Only print and measure the time, if we are showing solutions
+        if (showSolutions) {
+            endTime = System.currentTimeMillis(); // Stop timer.
+            System.out.println("A total of " + noOfSolutions + " solutions were found.");
+            System.out.println("were found in " + (endTime - startTime) + " ms");
+            System.out.println("*******************************************");
+        }
+    }
 
-        long endTime = System.currentTimeMillis();
+    /**
+     * Finds and prints to terminal the number of solutions to a range of n-queen problems, along with their runtimes.
+     * @param min The minimum number of queens.
+     * @param max The maximum number of queens.
+     */
+    public void findNoOfSolutions(int min, int max) {
+        // Setup print formatting by adding indentations for strings and set 2 decimals for doubles.
+        String format = "%-10s%-10s%-10s%-10s%n";
+        DecimalFormat df = new DecimalFormat("#.##");
+        // Ready timers.
+        long startTime, endTime;
 
-        System.out.println("were found in " + (endTime - startTime) + " ms");
+        // Print spacer and table header
+        System.out.println("\n*******************************************");
+        System.out.printf(format, "Queens", "Solutions","Time(ms)","Solutions/ms");
+        // Loop through each n-queen problem.
+        for (int i = min; i <= max; i++) {
+            // Find and measure the time it takes to calculate all solutions to the i-queen problem.
+            //      We've decided to use nanoTime instead of millis, because many solutions were found in 0ms.
+            //      This does not mean that the timer will be nanosecond accurate, but it will allow us to place decimals,
+            //      that are accurate depending on the machine running it.
+            startTime = System.nanoTime();
+            findAllSolutions(i);
+            endTime = System.nanoTime();
+
+            // Calculate the runtime and convert to millisecond. 1ms = 1,000,000ns
+            double duration = endTime-startTime;
+            duration/=1000000;
+            // Only print the number of solutions, if there are any solutions to display.
+            if (noOfSolutions > 0) {
+                // Calculate average number of solutions
+                String avgSolutionTime = duration == 0 ? "> 1" : Integer.toString((int)(noOfSolutions / duration)); // Avoid 0-division exception.
+                // Print table row.
+                String timeStr = df.format(duration).equals("0") ? "< 0.01" : df.format(duration); // If faster than 0.01ms, print '< 0.01'
+                System.out.printf(format, i, noOfSolutions, timeStr, avgSolutionTime);
+            }
+        }
+        System.out.println("*******************************************");
     }
 
     /**
@@ -42,20 +92,23 @@ public class Solver {
      * @param row The current row
      */
     private void positionQueen(int row) {
+        // Check if all rows are filled.
         if (row == noOfQueens) {
             noOfSolutions++;
-            printSolution();
+            if (showSolutions) { printSolution(); }
             return;
         }
 
+        // Cache queens
         int[] cachedQueens = queens.clone();
 
+        // Loop through each possible queen.
         for (int i = 0; i < noOfQueens; i++) {
             queens = cachedQueens.clone();
-
+            // Check if queen can be legally placed.
             if (legal(row, i)) {
                 queens[row] = i;
-                positionQueen(row + 1);
+                positionQueen(row + 1); // recur.
             }
         }
     }
@@ -117,5 +170,9 @@ public class Solver {
         String[] letters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q"};
 
         return letters[col] + (row + 1);
+    }
+
+    public void setShowSolutions(boolean showsolutions) {
+        this.showSolutions = showsolutions;
     }
 }
